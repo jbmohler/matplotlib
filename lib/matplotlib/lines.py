@@ -715,7 +715,7 @@ class Line2D(Artist):
                 gc.set_linewidth(0)
                 gc.set_foreground(rgbaFace, isRGBA=True)
             else:
-                gc.set_foreground(edgecolor)
+                gc.set_foreground(edgecolor, isRGBA=True)
                 gc.set_linewidth(self._markeredgewidth)
 
             marker = self._marker
@@ -790,7 +790,7 @@ class Line2D(Artist):
             if self._marker.get_marker() in ('.', ','):
                 return self._color
             if self._marker.is_filled() and self.get_fillstyle() != 'none':
-                return 'k'  # Bad hard-wired default...
+                return colorConverter.to_rgba('k')  # Bad hard-wired default...
             else:
                 return self._color
         else:
@@ -887,7 +887,7 @@ class Line2D(Artist):
 
         ACCEPTS: any matplotlib color
         """
-        self._color = color
+        self._color = colorConverter.to_rgba(color)
 
     def set_drawstyle(self, drawstyle):
         """
@@ -1001,9 +1001,10 @@ class Line2D(Artist):
         ACCEPTS: any matplotlib color
         """
         if fc is None:
-            fc = 'auto'
+            self._markerfacecolor = 'auto'
+            return
 
-        self._markerfacecolor = fc
+        self._markerfacecolor = colorConverter.to_rgba(fc)
 
     def set_markerfacecoloralt(self, fc):
         """
@@ -1012,9 +1013,10 @@ class Line2D(Artist):
         ACCEPTS: any matplotlib color
         """
         if fc is None:
-            fc = 'auto'
+            self._markerfacecoloralt = 'auto'
+            return
 
-        self._markerfacecoloralt = fc
+        self._markerfacecoloralt = colorConverter.to_rgba(fc)
 
     def set_markersize(self, sz):
         """
@@ -1149,11 +1151,11 @@ class Line2D(Artist):
         if is_string_like(facecolor) and facecolor.lower() == 'none':
             rgbaFace = None
         else:
-            rgbaFace = colorConverter.to_rgba(facecolor, self._alpha)
+            rgbaFace = colorConverter.override_alpha(facecolor, self._alpha)
         return rgbaFace
 
     def _get_rgba_ln_color(self, alt=False):
-        return colorConverter.to_rgba(self._color, self._alpha)
+        return colorConverter.override_alpha(self._color, self._alpha)
 
     # some aliases....
     def set_aa(self, val):

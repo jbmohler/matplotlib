@@ -773,6 +773,7 @@ class GraphicsContextBase:
 
     def copy_properties(self, gc):
         'Copy properties from gc to self'
+        print(gc._alpha)
         self._alpha = gc._alpha
         self._forced_alpha = gc._forced_alpha
         self._antialiased = gc._antialiased
@@ -784,6 +785,8 @@ class GraphicsContextBase:
         self._linestyle = gc._linestyle
         self._linewidth = gc._linewidth
         self._rgb = gc._rgb
+        if not isinstance(gc._orig_color, tuple):
+            raise Thing()
         self._orig_color = gc._orig_color
         self._hatch = gc._hatch
         self._url = gc._url
@@ -918,7 +921,7 @@ class GraphicsContextBase:
         else:
             self._alpha = 1.0
             self._forced_alpha = False
-        self.set_foreground(self._orig_color)
+        self.set_foreground(self._orig_color, isRGBA=True)
 
     def set_antialiased(self, b):
         """
@@ -980,20 +983,22 @@ class GraphicsContextBase:
 
         If you know fg is rgba, set ``isRGBA=True`` for efficiency.
         """
-        self._orig_color = fg
-        if self._forced_alpha:
+        if self._forced_alpha and isRGBA:
+            self._rgb = tuple(fg[:3] + (self._alpha,))
+        elif self._forced_alpha:
             self._rgb = colors.colorConverter.to_rgba(fg, self._alpha)
         elif isRGBA:
             self._rgb = fg
         else:
             self._rgb = colors.colorConverter.to_rgba(fg)
+        self._orig_color = self._rgb
 
     def set_graylevel(self, frac):
         """
         Set the foreground color to be a gray level with *frac*
         """
-        self._orig_color = frac
         self._rgb = (frac, frac, frac, self._alpha)
+        self._orig_color = self._rgb
 
     def set_joinstyle(self, js):
         """
