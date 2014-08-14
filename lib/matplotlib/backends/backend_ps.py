@@ -56,6 +56,7 @@ backend_version = 'Level II'
 
 debugPS = 0
 
+
 class PsBackendHelper(object):
 
     def __init__(self):
@@ -78,7 +79,6 @@ class PsBackendHelper(object):
         self._cached["gs_exe"] = gs_exe
         return gs_exe
 
-
     @property
     def gs_version(self):
         """
@@ -90,14 +90,18 @@ class PsBackendHelper(object):
             pass
 
         from matplotlib.compat.subprocess import Popen, PIPE
-        pipe = Popen(self.gs_exe + " --version",
-                     shell=True, stdout=PIPE).stdout
+        s = Popen(self.gs_exe + " --version",
+                     shell=True, stdout=PIPE)
+        pipe, stderr = s.communicate()
         if six.PY3:
-            ver = pipe.read().decode('ascii')
+            ver = pipe.decode('ascii')
         else:
-            ver = pipe.read()
-        gs_version = tuple(map(int, ver.strip().split(".")))
-
+            ver = pipe
+        try:
+            gs_version = tuple(map(int, ver.strip().split(".")))
+        except ValueError:
+            # if something went wrong parsing return null version number
+            gs_version = (0, 0)
         self._cached["gs_version"] = gs_version
         return gs_version
 
